@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Свой почерк: шаблон, фото, разметка — typeshit</title>
+<meta name="description" content="Снимите свой почерк: распечатайте шаблон, напишите буквы, сфотографируйте лист и разметьте ячейки. Генератор будет писать вашим почерком.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231b2a4a'/%3E%3Ctext x='16' y='23' font-size='19' text-anchor='middle' fill='%23fffdf9' font-family='Georgia,serif' font-style='italic'%3Eа%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="app.css?v=2">
+</head>
+<body>
+
+<noscript><div class="wrap"><div class="card"><div class="card-body"><p><strong>Нужен JavaScript.</strong> Студия разметки работает на JavaScript: без него не получится отметить буквы на фото.</p></div></div></div></noscript>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="brand-mark" aria-hidden="true">а</span>
+    <span>typeshit<small>рукописный генератор</small></span>
+  </a>
+  <nav class="nav" aria-label="Основная навигация">
+    <a href="index.html">Генератор</a>
+    <a href="handwriting.html" aria-current="page">Мой почерк</a>
+    <a href="help.html">Справка</a>
+  </nav>
+</header>
+
+<main class="wrap">
+  <div class="page-head no-print">
+    <div>
+      <p class="eyebrow">Студия почерка</p>
+      <h1>Снять свой почерк с листа бумаги</h1>
+      <p class="lead">
+        Распечатайте шаблон, напишите в клетках буквы — по одному знаку на клетку.
+        Сфотографируйте лист и разметьте: сервер вырежет каждую букву в отдельный спрайт,
+        сохранит все повторения и измерит наклон, нажим и разброс. Из этого получается
+        личный почерк, а не шрифт.
+      </p>
+    </div>
+    <div class="btn-group">
+      <a class="btn btn-ghost" href="help.html" data-icon="file">Как писать и снимать</a>
+    </div>
+  </div>
+
+  <div class="steps">
+
+    <!-- step 1 -->
+    <section class="card step" id="step1">
+      <div class="card-head">
+        <span class="step-num">1</span>
+        <div>
+          <h2>Шаблон для письма</h2>
+          <div class="sub">Выберите набор букв и число повторов. Чем больше повторов, тем живее почерк.</div>
+        </div>
+        <span class="spacer"></span>
+        <button type="button" class="btn" id="btn-template" data-icon="file">Получить шаблон</button>
+      </div>
+      <div class="card-body">
+        <div class="btn-group" style="margin-bottom:16px; flex-wrap:wrap">
+          <div class="seg" id="seg-lang" role="group" aria-label="Набор символов">
+            <button type="button" data-value="ru" aria-pressed="true">Русский, полный</button>
+            <button type="button" data-value="ru-short" aria-pressed="false">Русский, короткий</button>
+            <button type="button" data-value="latin" aria-pressed="false">Латиница</button>
+          </div>
+          <div class="seg" id="seg-reps" role="group" aria-label="Повторов на букву">
+            <button type="button" data-value="1" aria-pressed="false">1 повтор</button>
+            <button type="button" data-value="2" aria-pressed="true">2 повтора</button>
+            <button type="button" data-value="3" aria-pressed="false">3 повтора</button>
+          </div>
+          <button type="button" class="btn hidden" id="btn-print" data-icon="print">Печать</button>
+        </div>
+        <div class="template-grid" id="template-grid"></div>
+        <p class="hint" id="template-hint">Шаблон — это страницы A4 с клетками. В каждой клетке бледно
+          напечатана буква: обведите её своим почерком, не выходя за границы.</p>
+      </div>
+    </section>
+
+    <!-- step 2 -->
+    <section class="card step locked" id="step2">
+      <div class="card-head">
+        <span class="step-num">2</span>
+        <div>
+          <h2>Фотография заполненного листа</h2>
+          <div class="sub">Скан или фото сверху, без вспышки и резких теней. Подойдёт и несколько страниц.</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="dropzone" id="dropzone" tabindex="0" role="button"
+             aria-label="Загрузить фотографию заполненного шаблона">
+          <p><strong>Перетащите фото сюда</strong> или нажмите, чтобы выбрать файл</p>
+          <p class="hint">PNG, JPEG или WebP до 20 МБ. Телефон сойдёт.</p>
+        </div>
+        <input type="file" id="file-input" accept="image/*" capture="environment" multiple class="hidden">
+        <p class="hint" id="upload-status" style="margin-top:12px"></p>
+      </div>
+    </section>
+
+    <!-- step 3 -->
+    <section class="card step locked" id="step3">
+      <div class="card-head">
+        <span class="step-num">3</span>
+        <div>
+          <h2>Разметка букв</h2>
+          <div class="sub">Проверьте рамки. Нажмите на ячейку и введите букву — или наберите с клавиатуры.</div>
+        </div>
+        <span class="spacer"></span>
+        <span class="badge" id="markup-state">черновик</span>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div class="markup">
+          <div class="canvas-wrap" id="canvas-wrap">
+            <div class="sheet-tabs" id="sheet-tabs" hidden></div>
+            <div class="canvas-toolbar">
+              <button type="button" class="btn btn-sm btn-icon" id="btn-add-cell" data-icon="plus" title="Добавить ячейку (Shift + протянуть)" aria-label="Добавить ячейку"></button>
+              <button type="button" class="btn btn-sm btn-icon" id="btn-undo" data-icon="undo" title="Отменить (Ctrl+Z)" aria-label="Отменить"></button>
+              <button type="button" class="btn btn-sm btn-icon" id="btn-redo" data-icon="redo" title="Вернуть (Ctrl+Shift+Z)" aria-label="Вернуть"></button>
+              <button type="button" class="btn btn-sm btn-icon" id="btn-fit" data-icon="refresh" title="Вписать лист" aria-label="Вписать лист"></button>
+            </div>
+            <canvas id="canvas"></canvas>
+            <div class="canvas-hint" id="canvas-hint">Клик — выбрать · Shift + протянуть — новая ячейка · колесо — масштаб</div>
+          </div>
+          <aside class="side">
+            <div class="side-head">
+              <div style="display:flex; align-items:center; gap:8px">
+                <strong style="font-size:14px">Ячейки</strong>
+                <span class="badge" id="cells-count">0</span>
+                <span class="spacer"></span>
+                <span class="hint" id="zoom-label">100%</span>
+              </div>
+              <div class="progress" style="margin-top:8px"><i id="cells-progress"></i></div>
+            </div>
+            <div class="side-body">
+              <div class="inspector" id="inspector"></div>
+              <div class="divider"></div>
+              <h4 style="font-size:13px;margin-bottom:8px">Буквы в разметке</h4>
+              <div class="char-list" id="char-list"></div>
+              <div class="divider"></div>
+              <h4 style="font-size:13px;margin-bottom:8px">Проверка</h4>
+              <div class="report" id="report"></div>
+            </div>
+            <div class="side-foot">
+              <button type="button" class="btn btn-sm btn-block" id="btn-save-cells" data-icon="check">Сохранить разметку</button>
+              <p class="hint" style="margin:0">Разметка хранится и в браузере: можно закрыть вкладку и вернуться.</p>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- step 4 -->
+    <section class="card step locked" id="step4">
+      <div class="card-head">
+        <span class="step-num">4</span>
+        <div>
+          <h2>Готовый почерк</h2>
+          <div class="sub">Назовите профиль и соберите его. Тестовая строка покажет, как он выглядит в деле.</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div style="display:flex; gap:12px; align-items:end; flex-wrap:wrap">
+          <div class="field" style="flex:1; min-width:220px">
+            <label for="profile-name">Название</label>
+            <input type="text" id="profile-name" placeholder="Например: мой почерк, шариковая" autocomplete="off">
+          </div>
+          <button type="button" class="btn btn-primary" id="btn-commit" data-icon="wand">Создать почерк</button>
+        </div>
+        <div id="commit-result" style="margin-top:18px"></div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="card" style="margin-top:24px">
+    <div class="card-head"><h3>Частые вопросы</h3></div>
+    <div class="card-body">
+      <details class="group">
+        <summary>Сколько букв нужно написать?<span class="chev" data-icon="right" data-icon-size="14"></span></summary>
+        <div class="group-body"><p class="hint">Минимум — короткий набор (буквы, цифры, основные знаки) с одним повтором.
+          Для живого почерка лучше полный набор с двумя-тремя повторами: тогда у каждой буквы есть несколько
+          реальных вариантов, и страница не выглядит штампованной.</p></div>
+      </details>
+      <details class="group">
+        <summary>А если сервер не нашёл клетки?<span class="chev" data-icon="right" data-icon-size="14"></span></summary>
+        <div class="group-body"><p class="hint">Ничего страшного: инструмент «+» в углу листа добавляет ячейку,
+          углы тянутся мышью, а лишние ячейки удаляются Delete. Можно размечать и обычный лист без шаблона —
+          сервер предложит области сам.</p></div>
+      </details>
+      <details class="group">
+        <summary>Куда попадает фото?<span class="chev" data-icon="right" data-icon-size="14"></span></summary>
+        <div class="group-body"><p class="hint">Всё остаётся на вашем сервере: нормализованный лист лежит в
+          <span class="mono">data/captures</span>, профиль — в <span class="mono">data/profiles</span>.
+          Никаких внешних сервисов.</p></div>
+      </details>
+    </div>
+  </div>
+</main>
+
+<div class="toasts" aria-live="polite" role="status"></div>
+<div class="print-only" id="print-area"></div>
+
+<script src="js/api.js?v=2" defer></script>
+<script src="js/studio.js?v=2" defer></script>
+</body>
+</html>
