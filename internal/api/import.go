@@ -22,8 +22,9 @@ type importResult struct {
 	Name  string `json:"name"`
 }
 
-// handleImport turns an uploaded .docx / .txt into plain text so agents and the
-// browser can feed documents straight into the generator.
+// handleImport turns an uploaded .docx / .txt / .md into plain text so agents and the
+// browser can feed documents straight into the generator. Markdown is reduced to the
+// prose a human would copy out by hand.
 func (s *Server) handleImport(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseMultipartForm(maxImportBytes); err != nil {
 		writeErr(w, http.StatusBadRequest, "bad_body", "ожидался multipart с полем file")
@@ -51,11 +52,14 @@ func (s *Server) handleImport(w http.ResponseWriter, r *http.Request) {
 	switch ext {
 	case ".docx":
 		text, err = docxText(data)
-	case ".txt", ".md", "":
+	case ".txt", "", ".md":
 		if !utf8.Valid(data) {
 			err = errors.New("файл не в UTF-8")
 		} else {
 			text = string(data)
+			if ext == ".md" {
+				text = markdownText(text)
+			}
 		}
 	default:
 		writeErr(w, http.StatusBadRequest, "unsupported", "поддерживаются .docx, .txt и .md")

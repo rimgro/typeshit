@@ -33,11 +33,23 @@ curl -s -X POST localhost:8080/api/v1/profiles \
   -H 'content-type: application/json' \
   -d '{"name":"Демо","fontId":"badscript","variants":3,"lang":"ru"}'
 
+# готовый markdown/docx/txt → текст без разметки
+curl -s -F 'file=@lab3.md' localhost:8080/api/v1/import
+# -> {"text":"Лабораторная работа №3\n\n…","chars":169,"name":"lab3.md"}
+
 # отрендерить страницу
 curl -s -X POST localhost:8080/api/v1/generate \
   -H 'content-type: application/json' -d @request.json
 # -> {"id":"r...","pages":["/api/v1/results/r.../page-001.png"],"millis":1200}
 ```
+
+## Рукописная работа из markdown
+
+Загружаете `.md` (или `.txt`, `.docx`) в `/api/v1/import` либо через кнопку импорта в
+веб-интерфейсе — сервер снимает разметку (заголовки, `**жирный**`, списки, ссылки,
+таблицы, блоки кода остаются текстом) и отдаёт чистый текст, из которого собирается
+страница. Дальше выбираете почерк (свой профиль или встроенный шрифт), бумагу, ручку
+и эффекты — на выходе PNG/JPEG/PDF/ZIP.
 
 ## Свой почерк (главный сценарий)
 
@@ -101,6 +113,7 @@ POST   /api/v1/capture       (multipart: file + spec JSON)
 GET    /api/v1/capture/{id}, /capture/{id}/image
 POST   /api/v1/capture/{id}/cells   {cells:[{id,rect,label}]}
 POST   /api/v1/capture/{id}/commit  {name, assignments:[{cellId,label}], mergeInto?}
+POST   /api/v1/import   (multipart: file=.md/.txt/.docx) → {text,chars,name}
 POST   /api/v1/generate  {text, profileId, seed, page, paper, pen, style, effects, flaws}
 GET    /api/v1/jobs/{id}
 GET    /api/v1/results/{id}/page-001.png · export.pdf · export.zip
