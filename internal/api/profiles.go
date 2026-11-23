@@ -32,6 +32,8 @@ type fontInfo struct {
 	Cursive  bool    `json:"cursive"`
 	Cyrillic bool    `json:"cyrillic"`
 	Builtin  bool    `json:"builtin"`
+	Category string  `json:"category,omitempty"`
+	Source   string  `json:"source,omitempty"`
 }
 
 type profileSummary struct {
@@ -60,15 +62,55 @@ func (s *Server) handleFonts(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, s.fontList())
 }
 
+// handleFontFile serves the raw TTF/OTF so the browser can render instant,
+// fully client-side font previews in the catalogue. Files are immutable:
+// the catalogue is read once at startup.
+func (s *Server) handleFontFile(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	f, ok := assets.Lookup(id)
+	if !ok {
+		writeErr(w, http.StatusNotFound, "not_found", "unknown font")
+		return
+	}
+	data, ok := assets.FontData(id)
+	if !ok {
+		writeErr(w, http.StatusNotFound, "not_found", "font file unavailable")
+		return
+	}
+	ct := "font/ttf"
+	if strings.HasSuffix(strings.ToLower(f.File), ".otf") {
+		ct = "font/otf"
+	}
+	cache := "public, max-age=3600"
+	if f.Source == "builtin" {
+		cache = "public, max-age=31536000, immutable"
+	}
+	w.Header().Set("Content-Type", ct)
+	w.Header().Set("Content-Length", itoa(len(data)))
+	w.Header().Set("Cache-Control", cache)
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(data)
+}
+
 func (s *Server) fontList() []fontInfo {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.fontsOK {
 		return s.fonts
 	}
-	out := make([]fontInfo, 0, len(assets.FontList))
-	for _, f := range assets.FontList {
-		info := fontInfo{ID: f.ID, Name: f.Name, Slant: f.Slant, Cursive: f.Cursive, Builtin: true}
+	all := assets.AllFonts()
+	out := make([]fontInfo, 0, len(all))
+	for _, f := range all {
+		info := fontInfo{
+			ID:       f.ID,
+			Name:     f.Name,
+			Slant:    f.Slant,
+			Cursive:  f.Cursive,
+			Builtin:  f.Source == "builtin",
+			Category: f.Category,
+			Source:   f.Source,
+		}
 		if data, ok := assets.FontData(f.ID); ok {
 			info.Cyrillic = fontHasCyrillic(data)
 		}
@@ -297,6 +339,7 @@ func (s *Server) handleCreateProfile(w http.ResponseWriter, r *http.Request) {
 	if body.FontID == "" {
 		body.FontID = assets.FontList[0].ID
 	}
+	body.FontID = strings.TrimSpace(body.FontID)
 	data, ok := assets.FontData(body.FontID)
 	if !ok {
 		writeErr(w, http.StatusBadRequest, "unknown_font", "unknown fontId "+body.FontID)

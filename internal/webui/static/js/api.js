@@ -267,7 +267,9 @@
     file: '<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v6h4"/>',
     alert: '<path d="M12 4 2.5 20h19L12 4z"/><path d="M12 10v4.5M12 17.4v.2"/>',
     refresh: '<path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/>',
-    move: '<path d="M12 3v18M3 12h18m-3-3 3 3-3 3M9 6l3-3 3 3M6 9l-3 3 3 3m12-3-3 3"/>'
+    move: '<path d="M12 3v18M3 12h18m-3-3 3 3-3 3M9 6l3-3 3 3M6 9l-3 3 3 3m12-3-3 3"/>',
+    grid: '<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>',
+    help: '<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.5 2.4c-.7.35-1.1.9-1.1 1.7v.6M12 17.2v.2"/>'
   };
 
   function icon(name, size) {
@@ -297,12 +299,16 @@
   function setBusy(button, busy, label) {
     if (!button) return;
     if (busy) {
-      button.dataset.label = button.dataset.label || button.textContent;
+      if (!button.dataset.label) {
+        button.dataset.label = button.textContent.trim();
+        button.dataset.html = button.innerHTML;
+      }
       button.disabled = true;
       button.innerHTML = '<span class="spinner"></span>' + (label ? " " + label : "");
     } else {
       button.disabled = false;
-      button.innerHTML = button.dataset.label || label || "Готово";
+      if (button.dataset.html) button.innerHTML = button.dataset.html;
+      else button.innerHTML = button.dataset.label || label || "Готово";
     }
   }
 

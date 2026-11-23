@@ -508,6 +508,29 @@ func TestFonts(t *testing.T) {
 	}
 }
 
+func TestFontFile(t *testing.T) {
+	_, srv := newTestServer(t)
+	resp, data := do(t, srv, http.MethodGet, "/api/v1/fonts/caveat/file", nil)
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("status = %d", resp.StatusCode)
+	}
+	if ct := resp.Header.Get("Content-Type"); ct != "font/ttf" && ct != "font/otf" {
+		t.Fatalf("content-type = %q", ct)
+	}
+	if len(data) < 1000 {
+		t.Fatalf("font file is suspiciously small: %d bytes", len(data))
+	}
+	if !strings.Contains(resp.Header.Get("Cache-Control"), "immutable") {
+		t.Fatalf("cache-control = %q", resp.Header.Get("Cache-Control"))
+	}
+
+	resp, data = do(t, srv, http.MethodGet, "/api/v1/fonts/nope/file", nil)
+	if resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("unknown font status = %d", resp.StatusCode)
+	}
+	decodeErr(t, data)
+}
+
 func TestTemplateEndpoint(t *testing.T) {
 	_, srv := newTestServer(t)
 	resp, data := do(t, srv, http.MethodGet, "/api/v1/template?lang=ru&reps=1", nil)

@@ -61,6 +61,7 @@ func (s *Server) Handler() http.Handler {
 
 	mux.HandleFunc("GET /api/v1/health", s.handleHealth)
 	mux.HandleFunc("GET /api/v1/fonts", s.handleFonts)
+	mux.HandleFunc("GET /api/v1/fonts/{id}/file", s.handleFontFile)
 	mux.HandleFunc("POST /api/v1/import", s.handleImport)
 	mux.HandleFunc("GET /api/v1/profiles", s.handleProfiles)
 	mux.HandleFunc("POST /api/v1/profiles", s.handleCreateProfile)

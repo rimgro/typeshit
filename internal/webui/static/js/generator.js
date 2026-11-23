@@ -23,6 +23,7 @@
 
   var DEFAULT_STATE = {
     profileId: "",
+    demoFontId: "",
     seed: A.randomSeed(),
     text: EXAMPLE_TEXT,
     title: "",
@@ -71,7 +72,7 @@
       ]
     },
     {
-      id: "paper", title: "Бумага", tag: "тетрадь", open: true, fields: [
+      id: "paper", title: "Бумага", tag: "тетрадь", open: false, fields: [
         { k: "paper.kind", t: "seg", label: "Фон", def: "lined", opts: [["lined", "В линейку"], ["grid", "Клетка"], ["dot", "Точки"], ["blank", "Чистая"]] },
         { k: "paper.cellMm", t: "range", label: "Шаг строки", unit: "мм", min: 4, max: 12, step: 0.5, def: 8 },
         { k: "paper.color", t: "color", label: "Оттенок бумаги", def: "#fbf8f1", opts: PAPER_COLORS },
@@ -92,9 +93,9 @@
       ]
     },
     {
-      id: "style", title: "Стиль письма", tag: "вариативность", open: true, fields: [
+      id: "style", title: "Стиль письма", tag: "вариативность", open: false, fields: [
         { k: "style.scale", t: "range", label: "Размер букв", min: 0, max: 2, step: 0.05, def: 0, zeroAuto: "по листу" },
-        { k: "style.variability", t: "range", label: "Разброс", min: 0, max: 2, step: 0.05, def: 1, hint: "0 — как под копирку, 1 — как в жизни, 2 — нарочито неровно" },
+        { k: "style.variability", t: "range", label: "Разброс", min: 0, max: 2, step: 0.05, def: 1 },
         { k: "style.slant", t: "range", label: "Наклон", unit: "°", min: -15, max: 30, step: 1, def: null, nullable: true },
         { k: "style.lineGap", t: "range", label: "Межстрочный", unit: "em", min: 1.1, max: 2.6, step: 0.05, def: null, nullable: true },
         { k: "style.wordGap", t: "range", label: "Пробел между словами", unit: "em", min: 0.2, max: 1, step: 0.05, def: null, nullable: true },
@@ -279,7 +280,6 @@
       var details = el("details", { class: "group" });
       if (group.open) details.open = true;
       var summary = el("summary", {}, el("span", { text: group.title }));
-      if (group.tag) summary.appendChild(el("span", { class: "tag", text: group.tag }));
       summary.appendChild(el("span", { class: "chev", html: A.icon("right", 14) }));
       details.appendChild(summary);
       var body = el("div", { class: "group-body" });
@@ -292,6 +292,410 @@
   /* ---------- profiles ---------- */
 
   var profiles = [];
+  var fonts = [];
+  var DEFAULT_SAMPLE = "Съешь ещё этих мягких французских булок";
+  var LATIN_SAMPLE = "The quick brown fox jumps over the lazy dog";
+  var FONT_CAT_LABELS = {
+    handwriting: "Рукописные",
+    cursive: "Прописи",
+    calligraphy: "Каллиграфия",
+    sans: "Печатные"
+  };
+
+  var fontState = {
+    open: false,
+    query: "",
+    category: "all",
+    cyrillicOnly: true,
+    sample: DEFAULT_SAMPLE,
+    selected: "",
+    loading: false
+  };
+  var loadedFontFaces = {};
+  var fontCardEls = {};
+  var fontObserver = null;
+  var lastFontFocus = null;
+
+  function fontById(id) {
+    for (var i = 0; i < fonts.length; i++) if (fonts[i].id === id) return fonts[i];
+    return null;
+  }
+
+  function fontCategoryLabel(cat) {
+    if (!cat) return "Другие";
+    return FONT_CAT_LABELS[cat] || (String(cat).charAt(0).toUpperCase() + String(cat).slice(1));
+  }
+
+  function fontFamilyName(id) {
+    return "ts-font-" + String(id).replace(/[^a-zA-Z0-9_-]/g, "-");
+  }
+
+  function hasCyrillic(text) {
+    return /[А-Яа-яЁё]/.test(text || "");
+  }
+
+  function sampleFor(font) {
+    var custom = (fontState.sample || "").trim();
+    if (!custom) custom = DEFAULT_SAMPLE;
+    if (font.cyrillic === false && hasCyrillic(custom)) return LATIN_SAMPLE;
+    return custom;
+  }
+
+  async function loadFonts() {
+    try {
+      fonts = A.asList(await A.get("/fonts"), "fonts").filter(function (f) { return f && f.id; });
+    } catch (err) {
+      fonts = [];
+      A.toast("Не удалось загрузить каталог шрифтов: " + A.errorText(err), "err");
+    }
+    if (state.demoFontId && fontById(state.demoFontId)) fontState.selected = state.demoFontId;
+    renderFontCats();
+    if (fontState.open) {
+      renderFontGrid();
+      updateFontFooter();
+    }
+    return fonts;
+  }
+
+  function filteredFonts() {
+    var q = fontState.query.trim().toLowerCase();
+    return fonts.filter(function (f) {
+      if (fontState.cyrillicOnly && f.cyrillic === false) return false;
+      if (fontState.category !== "all" && String(f.category || "") !== fontState.category) return false;
+      if (!q) return true;
+      return (f.id + " " + f.name + " " + (f.category || "")).toLowerCase().indexOf(q) !== -1;
+    });
+  }
+
+  function renderFontCats() {
+    var host = $("#font-cats");
+    if (!host) return;
+    var cats = [{ id: "all", label: "Все" }];
+    var seen = {};
+    fonts.forEach(function (f) {
+      var c = String(f.category || "").trim();
+      if (!c || seen[c]) return;
+      seen[c] = 1;
+      cats.push({ id: c, label: fontCategoryLabel(c) });
+    });
+    if (fontState.category !== "all" && !seen[fontState.category]) fontState.category = "all";
+    host.innerHTML = "";
+    cats.forEach(function (c) {
+      var b = el("button", {
+        type: "button",
+        text: c.label,
+        attrs: { "data-cat": c.id, "aria-pressed": fontState.category === c.id ? "true" : "false" }
+      });
+      b.addEventListener("click", function () {
+        fontState.category = c.id;
+        $$("button", host).forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+        renderFontGrid();
+      });
+      host.appendChild(b);
+    });
+  }
+
+  function rememberFontCard(id, card) {
+    (fontCardEls[id] = fontCardEls[id] || []).push(card);
+  }
+
+  function markFontCards(id, status) {
+    (fontCardEls[id] || []).forEach(function (card) {
+      card.classList.toggle("is-loading", status === "loading");
+      card.classList.toggle("is-error", status === "err");
+    });
+  }
+
+  function loadFontFace(card) {
+    var id = card.getAttribute("data-font-id");
+    var f = fontById(id);
+    if (!f) return;
+    var state = loadedFontFaces[id];
+    if (state === "ok") return;
+    if (state === "err") { card.classList.add("is-error"); return; }
+    if (state === "loading") { card.classList.add("is-loading"); return; }
+    if (!("FontFace" in window) || !document.fonts) {
+      loadedFontFaces[id] = "err";
+      markFontCards(id, "err");
+      return;
+    }
+    loadedFontFaces[id] = "loading";
+    markFontCards(id, "loading");
+    try {
+      var face = new FontFace(
+        fontFamilyName(id),
+        'url("' + A.url("/fonts/" + encodeURIComponent(id) + "/file") + '")'
+      );
+      face.display = "swap";
+      document.fonts.add(face);
+      face.load().then(function () {
+        loadedFontFaces[id] = "ok";
+        markFontCards(id, "ok");
+      }, function () {
+        loadedFontFaces[id] = "err";
+        markFontCards(id, "err");
+      });
+    } catch (err) {
+      loadedFontFaces[id] = "err";
+      markFontCards(id, "err");
+    }
+  }
+
+  function ensureFontObserver() {
+    if (fontObserver) return;
+    var root = $("#font-grid");
+    if (!root) return;
+    if (!("IntersectionObserver" in window)) {
+      fontObserver = false;
+      return;
+    }
+    fontObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        fontObserver.unobserve(entry.target);
+        loadFontFace(entry.target);
+      });
+    }, { root: root, rootMargin: "260px 0px" });
+  }
+
+  function observeFontCard(card) {
+    var id = card.getAttribute("data-font-id");
+    if (loadedFontFaces[id] === "ok") return;
+    if (!("IntersectionObserver" in window) || fontObserver === false) {
+      loadFontFace(card);
+      return;
+    }
+    ensureFontObserver();
+    if (fontObserver) fontObserver.observe(card);
+    else loadFontFace(card);
+  }
+
+  function updateFontSamples() {
+    $$(".font-card", $("#font-grid")).forEach(function (card) {
+      var f = fontById(card.getAttribute("data-font-id"));
+      if (!f) return;
+      var prev = card.querySelector(".font-preview");
+      if (!prev) return;
+      var text = sampleFor(f);
+      prev.textContent = text;
+      prev.title = text;
+    });
+  }
+
+  function selectFont(id) {
+    fontState.selected = id;
+    state.demoFontId = id;
+    saveState();
+    $$(".font-card", $("#font-grid")).forEach(function (card) {
+      var on = card.getAttribute("data-font-id") === id;
+      card.classList.toggle("is-selected", on);
+      card.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+    updateFontFooter();
+  }
+
+  function updateFontFooter() {
+    var box = $("#font-selected");
+    var create = $("#font-create");
+    if (!box || !create) return;
+    var f = fontById(fontState.selected);
+    box.innerHTML = "";
+    if (!f) {
+      box.appendChild(document.createTextNode("Выберите шрифт в списке"));
+      create.disabled = true;
+      return;
+    }
+    box.appendChild(document.createTextNode("Выбран: "));
+    box.appendChild(el("b", { text: f.name || f.id }));
+    if (f.cyrillic === false) {
+      box.appendChild(document.createTextNode(" "));
+      box.appendChild(el("span", { class: "warn", text: "только латиница" }));
+    }
+    create.disabled = false;
+  }
+
+  function renderFontGrid() {
+    var host = $("#font-grid");
+    if (!host) return;
+    host.innerHTML = "";
+    fontCardEls = {};
+    if (!fonts.length) {
+      host.appendChild(el("p", {
+        class: "hint",
+        text: fontState.loading ? "Загружаю каталог шрифтов…" : "Каталог шрифтов недоступен. Проверьте сервер."
+      }));
+      var count = $("#font-count");
+      if (count) count.textContent = fontState.loading ? "Загружаю каталог…" : "Каталог пуст";
+      updateFontFooter();
+      return;
+    }
+
+    var list = filteredFonts();
+    if (fontState.selected && !list.some(function (f) { return f.id === fontState.selected; })) {
+      fontState.selected = "";
+    }
+    var countEl = $("#font-count");
+    if (countEl) countEl.textContent = list.length + " из " + fonts.length + " шрифтов";
+    if (!list.length) {
+      host.appendChild(el("p", { class: "hint", text: "Ничего не нашлось. Попробуйте другой запрос или снимите фильтр." }));
+      updateFontFooter();
+      return;
+    }
+
+    list.forEach(function (f) {
+      var name = f.name || f.id;
+      var selected = fontState.selected === f.id;
+      var card = el("button", {
+        type: "button",
+        class: "font-card" + (selected ? " is-selected" : ""),
+        attrs: {
+          "data-font-id": f.id,
+          "aria-pressed": selected ? "true" : "false",
+          "aria-label": "Выбрать шрифт " + name,
+          title: name
+        }
+      });
+      var check = el("span", { class: "font-card-check", text: "✓", attrs: { "aria-hidden": "true" } });
+      var head = el("div", { class: "font-card-head" }, el("span", { class: "font-card-name", text: name }));
+      var sample = sampleFor(f);
+      var prev = el("span", {
+        class: "font-preview",
+        text: sample,
+        style: "font-family:'" + fontFamilyName(f.id) + "', var(--font)"
+      });
+      prev.title = sample;
+      var bits = [fontCategoryLabel(f.category)];
+      if (f.builtin) bits.push("встроенный");
+      if (f.cyrillic === false) bits.push("только латиница");
+      else if (!fontState.cyrillicOnly) bits.push("кириллица");
+      var meta = el("div", { class: "font-card-meta", text: bits.join(" · ") });
+      card.appendChild(check);
+      card.appendChild(head);
+      card.appendChild(prev);
+      card.appendChild(meta);
+      card.addEventListener("click", function () { selectFont(f.id); });
+      host.appendChild(card);
+
+      rememberFontCard(f.id, card);
+      if (loadedFontFaces[f.id] === "loading") card.classList.add("is-loading");
+      if (loadedFontFaces[f.id] === "err") card.classList.add("is-error");
+      observeFontCard(card);
+    });
+    updateFontFooter();
+  }
+
+  function syncFontSelection() {
+    var f = state.demoFontId ? fontById(state.demoFontId) : null;
+    if (f) {
+      fontState.selected = f.id;
+      if (f.cyrillic === false) fontState.cyrillicOnly = false;
+      if (fontState.category !== "all" && String(f.category || "") !== fontState.category) {
+        fontState.category = "all";
+      }
+    }
+    var chip = $("#font-cyr");
+    if (chip) chip.setAttribute("aria-pressed", fontState.cyrillicOnly ? "true" : "false");
+  }
+
+  function openFontBrowser() {
+    var modal = $("#font-modal");
+    if (!modal) return;
+    lastFontFocus = document.activeElement;
+    fontState.open = true;
+    fontState.loading = !fonts.length;
+    fontState.query = "";
+    var searchInput = $("#font-search");
+    if (searchInput) searchInput.value = "";
+    modal.classList.add("on");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    var shell = document.querySelector(".app-shell");
+    if (shell) shell.inert = true;
+    var sampleInput = $("#font-sample");
+    if (sampleInput) sampleInput.value = fontState.sample;
+    if (!fonts.length) {
+      var host = $("#font-grid");
+      if (host) host.innerHTML = '<p class="hint">Загружаю каталог шрифтов…</p>';
+      var count = $("#font-count");
+      if (count) count.textContent = "Загружаю каталог…";
+      loadFonts().then(function () {
+        fontState.loading = false;
+        if (!fontState.open) return;
+        syncFontSelection();
+        renderFontCats();
+        renderFontGrid();
+        updateFontFooter();
+        revealSelectedFont();
+      });
+    } else {
+      syncFontSelection();
+      renderFontCats();
+      renderFontGrid();
+      updateFontFooter();
+      revealSelectedFont();
+    }
+    if (window.matchMedia("(min-width: 721px)").matches) {
+      setTimeout(function () {
+        var search = $("#font-search");
+        if (search) search.focus();
+      }, 40);
+    }
+  }
+
+  function closeFontBrowser() {
+    var modal = $("#font-modal");
+    if (!modal || !modal.classList.contains("on")) return;
+    modal.classList.remove("on");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+    var shell = document.querySelector(".app-shell");
+    if (shell) shell.inert = false;
+    fontState.open = false;
+    if (lastFontFocus && lastFontFocus.focus) lastFontFocus.focus();
+  }
+
+  function revealSelectedFont() {
+    var host = $("#font-grid");
+    if (!host) return;
+    var card = host.querySelector(".font-card.is-selected");
+    if (!card) return;
+    var hr = host.getBoundingClientRect();
+    var cr = card.getBoundingClientRect();
+    if (cr.top < hr.top || cr.bottom > hr.bottom) {
+      host.scrollTop += cr.top - hr.top - 12;
+    }
+  }
+
+  function initFontBrowser() {
+    var trigger = $("#btn-font-browser");
+    var modal = $("#font-modal");
+    if (!trigger || !modal) return;
+    trigger.addEventListener("click", openFontBrowser);
+    $("#font-modal-close").addEventListener("click", closeFontBrowser);
+    $("#font-modal-cancel").addEventListener("click", closeFontBrowser);
+    modal.addEventListener("click", function (e) {
+      if (e.target === modal) closeFontBrowser();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && modal.classList.contains("on")) closeFontBrowser();
+    });
+    $("#font-search").addEventListener("input", A.debounce(function (e) {
+      fontState.query = e.target.value;
+      renderFontGrid();
+    }, 120));
+    $("#font-sample").addEventListener("input", A.debounce(function (e) {
+      fontState.sample = e.target.value;
+      updateFontSamples();
+    }, 120));
+    $("#font-cyr").addEventListener("click", function () {
+      fontState.cyrillicOnly = !fontState.cyrillicOnly;
+      this.setAttribute("aria-pressed", fontState.cyrillicOnly ? "true" : "false");
+      renderFontGrid();
+    });
+    $("#font-create").addEventListener("click", function () {
+      createFontProfile(fontState.selected, this);
+    });
+  }
 
   function profileById(id) {
     for (var i = 0; i < profiles.length; i++) if (profiles[i].id === id) return profiles[i];
@@ -302,11 +706,9 @@
     var host = $("#profiles");
     host.innerHTML = "";
     if (!profiles.length) {
-      host.appendChild(el("div", { class: "hint", text: "Почерков пока нет. Создайте демо-профиль или снимите свой.", style: "padding:8px 0" }));
-      $("#btn-demo-profile").classList.remove("hidden");
+      host.appendChild(el("div", { class: "hint", text: "Пока пусто. Соберите профиль из шрифта или снимите свой почерк." }));
       return;
     }
-    $("#btn-demo-profile").classList.add("hidden");
     profiles.forEach(function (p) {
       var card = el("button", { type: "button", class: "profile-card", attrs: { "aria-pressed": String(state.profileId) === p.id ? "true" : "false", title: p.name || p.id } });
       var thumb = el("div", { class: "thumb" }, "…");
@@ -317,7 +719,12 @@
       card.appendChild(thumb);
       card.appendChild(el("div", { class: "name", text: p.name || p.id }));
       var glyphs = p.glyphs ? Object.keys(p.glyphs).length : (p.charCount || 0);
-      card.appendChild(el("div", { class: "meta", text: (p.source === "scan" ? "с листа" : p.source === "manual" ? "разметка" : "шрифт") + (glyphs ? " · " + glyphs + " симв." : "") }));
+      var meta = p.source === "scan" ? "с листа" : p.source === "manual" ? "разметка" : "шрифт";
+      if (p.meta && p.meta.fontId) {
+        var mf = fontById(p.meta.fontId);
+        if (mf && mf.cyrillic === false) meta += " · латиница";
+      }
+      card.appendChild(el("div", { class: "meta", text: meta + (glyphs ? " · " + glyphs + " симв." : "") }));
       card.addEventListener("click", function () {
         state.profileId = p.id;
         $$(".profile-card", host).forEach(function (c) { c.setAttribute("aria-pressed", c === card ? "true" : "false"); });
@@ -342,28 +749,41 @@
     if (state.profileId && !profiles.some(function (p) { return p.id === state.profileId; })) state.profileId = "";
     renderProfiles();
     if (state.profileId) schedulePreview(200);
+    else setStatus("Выберите почерк");
   }
 
-  async function createDemoProfile() {
-    var btn = $("#btn-demo-profile");
+  async function createFontProfile(fontId, btn) {
+    var font = fontById(fontId);
+    if (!font) {
+      A.toast("Сначала выберите шрифт", "warn");
+      return;
+    }
+    if (!btn) btn = $("#font-create");
     A.setBusy(btn, true, "Собираю…");
     try {
-      var fonts = A.asList(await A.get("/fonts"), "fonts");
-      if (!fonts.length) throw new Error("на сервере нет встроенных шрифтов");
-      var font = fonts[0];
-      var created = await A.post("/profiles", { name: font.name || font.id, fontId: font.id, variants: 3 });
+      var lang = font.cyrillic === false ? "latin" : "ru";
+      var created = await A.post("/profiles", {
+        name: font.name || font.id,
+        fontId: font.id,
+        variants: 3,
+        lang: lang
+      });
       var prof = A.unwrap(created, "profile");
-      A.toast("Демо-почерк готов", "ok");
-      if (prof && prof.id) state.profileId = prof.id;
+      if (!prof || !prof.id) throw new Error("сервер не вернул профиль");
+      state.profileId = prof.id;
+      state.demoFontId = font.id;
+      saveState();
+      closeFontBrowser();
+      A.toast("Профиль «" + (prof.name || font.name || font.id) + "» готов" +
+        (font.cyrillic === false ? " · только латиница" : ""), "ok");
       await loadProfiles();
       renderProfiles();
       schedulePreview(0);
     } catch (err) {
       A.toast("Не получилось: " + A.errorText(err), "err");
-      A.setBusy(btn, false, "Быстрый демо-профиль");
-      return;
+    } finally {
+      A.setBusy(btn, false, "Создать профиль");
     }
-    A.setBusy(btn, false, "Быстрый демо-профиль");
   }
 
   /* ---------- request ---------- */
@@ -420,7 +840,10 @@
   function setStatus(text) { $("#preview-status").textContent = text; }
 
   function schedulePreview(delay) {
-    if (!state.profileId) return;
+    if (!state.profileId) {
+      setStatus("Выберите почерк");
+      return;
+    }
     clearTimeout(previewTimer);
     previewTimer = setTimeout(runPreview, delay === undefined ? 650 : delay);
   }
@@ -433,9 +856,8 @@
     var token = ++previewToken;
     var img = $("#preview-img");
     var skel = $("#preview-skeleton");
-    skel.classList.remove("hidden");
-    if (img.classList.contains("hidden")) skel.style.opacity = "1";
-    setStatus("Рендерю предпросмотр…");
+    if (img.classList.contains("hidden")) skel.classList.remove("hidden");
+    setStatus("Рендер…");
     try {
       var res = await A.post("/generate", buildRequest(true));
       if (token !== previewToken) return;
@@ -447,9 +869,7 @@
       img.src = url;
       img.classList.remove("hidden");
       $("#preview-empty").classList.add("hidden");
-      setStatus("Предпросмотр первой страницы" +
-        (state.text.length > 1200 ? " (первые 1200 символов)" : "") +
-        " · " + A.fmtMs(norm.millis));
+      setStatus((state.text.length > 1200 ? "Фрагмент · " : "") + A.fmtMs(norm.millis));
     } catch (err) {
       if (token !== previewToken) return;
       setStatus("Предпросмотр: " + A.errorText(err));
@@ -486,7 +906,7 @@
     }
     var btn = $("#btn-generate");
     A.setBusy(btn, true, "Рендер…");
-    setStatus("Генерация…");
+    setStatus("Рендер…");
     var started = performance.now();
     try {
       var body = buildRequest(false);
@@ -562,12 +982,12 @@
       png.href = norm.pages[0];
       png.setAttribute("download", "page-1.png");
       [pdf, zip, png, open].forEach(function (n) { n.classList.remove("hidden"); });
+      var actions = $("#preview-actions");
+      if (actions) actions.classList.remove("hidden");
     }
     openViewerData = norm.pages;
 
-    setStatus(norm.pages.length + " " + A.plural(norm.pages.length, "страница", "страницы", "страниц") +
-      (norm.millis ? " · " + A.fmtMs(norm.millis) : "") +
-      (norm.width ? " · " + norm.width + "×" + norm.height : ""));
+    setStatus(norm.pages.length + " стр." + (norm.millis ? " · " + A.fmtMs(norm.millis) : ""));
   }
 
   /* ---------- viewer ---------- */
@@ -691,7 +1111,7 @@
       var n = ta.value.length;
       var c = $("#counter");
       c.textContent = A.fmtNum(n) + " " + A.plural(n, "символ", "символа", "символов");
-      c.className = "counter" + (n > 120000 ? " err" : n > 90000 ? " warn" : "");
+      c.className = "panel-meta counter" + (n > 120000 ? " err" : n > 90000 ? " warn" : "");
     }
     function autoGrow() {
       ta.style.height = "auto";
@@ -797,12 +1217,13 @@
     bindText();
     bindSeed();
     bindViewer();
+    initFontBrowser();
     $("#btn-generate").addEventListener("click", generateFull);
-    $("#btn-demo-profile").addEventListener("click", createDemoProfile);
     $("#btn-open-viewer").addEventListener("click", function () {
       if (openViewerData.length) openViewer(openViewerData, 0);
     });
     loadProfiles();
+    loadFonts();
     if (state.profileId) schedulePreview(400);
   }
 

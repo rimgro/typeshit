@@ -5,130 +5,126 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Генератор рукописного текста — typeshit</title>
 <meta name="description" content="Превращает напечатанный текст в реалистичную рукописную страницу: свой почерк из фотографии, тетрадный фон, чернила, помарки и сканы.">
-<meta name="color-scheme" content="light dark">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231b2a4a'/%3E%3Ctext x='16' y='23' font-size='19' text-anchor='middle' fill='%23fffdf9' font-family='Georgia,serif' font-style='italic'%3Eа%3C/text%3E%3C/svg%3E">
-<link rel="stylesheet" href="app.css?v=2">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f7cf6'/%3E%3Ctext x='16' y='23' font-size='19' text-anchor='middle' fill='%23fff' font-family='Georgia,serif' font-style='italic'%3Eа%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="app.css?v=3">
 </head>
 <body>
 
-<noscript><div class="wrap"><div class="card"><div class="card-body"><p><strong>Нужен JavaScript.</strong> Генератору нужен JavaScript: вся раскладка и предпросмотр считаются в браузере.</p></div></div></div></noscript>
-<header class="topbar">
-  <a class="brand" href="index.html">
-    <span class="brand-mark" aria-hidden="true">а</span>
-    <span>typeshit<small>рукописный генератор</small></span>
-  </a>
-  <nav class="nav" aria-label="Основная навигация">
-    <a href="index.html" aria-current="page">Генератор</a>
-    <a href="handwriting.html">Мой почерк</a>
-    <a href="help.html">Справка</a>
-  </nav>
-</header>
+<noscript><div class="app-main"><div class="panel"><div class="panel-body"><p><strong>Нужен JavaScript.</strong> Генератору нужен JavaScript: вся раскладка и предпросмотр считаются в браузере.</p></div></div></div></noscript>
 
-<main class="wrap">
-  <div class="page-head">
-    <div>
-      <p class="eyebrow">Генератор страниц</p>
-      <h1>Рукописная страница из обычного текста</h1>
-      <p class="lead">
-        Свой почерк снимается с фотографии заполненного шаблона: каждая буква, каждый вариант
-        наклона и нажима попадает в модель. Дальше текст раскладывается по тетрадному листу —
-        с дрожанием строки, кляксами, зачёркиваниями и видом «снято на телефон».
-      </p>
-    </div>
-    <div class="btn-group no-print">
-      <a class="btn" href="handwriting.html" data-icon="pen">Создать свой почерк</a>
-      <a class="btn btn-ghost" href="help.html" data-icon="file">Как это работает</a>
-    </div>
-  </div>
+<div class="app-shell">
+  <aside class="sidebar no-print">
+    <a class="brand" href="index.html" aria-label="typeshit — на главную">
+      <span class="brand-mark" aria-hidden="true">а</span>
+      <span class="brand-text">typeshit<small>рукописный генератор</small></span>
+    </a>
+    <nav class="side-nav" aria-label="Основная навигация">
+      <a href="index.html" aria-current="page" data-icon="grid"><span>Генератор</span></a>
+      <a href="handwriting.html" data-icon="pen"><span>Мой почерк</span></a>
+      <a href="help.html" data-icon="help"><span>Справка</span></a>
+    </nav>
+  </aside>
 
-  <div class="gen">
-    <!-- ---------------- controls ---------------- -->
-    <aside class="gen-side no-print">
-      <div class="gen-side-scroll">
+  <main class="app-main">
+    <header class="page-top">
+      <div>
+        <h1>Генератор</h1>
+        <p class="page-sub">Рукописная страница из обычного текста — за пару секунд.</p>
+      </div>
+    </header>
 
-      <section class="card" id="card-text">
-        <div class="card-body tight" style="padding: 14px 16px;">
-          <div class="field">
-            <label for="title-input">Заголовок <span class="muted" style="font-weight:400">(необязательно)</span></label>
-            <input type="text" id="title-input" placeholder="Сочинение по литературе" autocomplete="off">
+    <div class="gen">
+      <aside class="gen-side no-print">
+        <!-- text -->
+        <section class="panel" id="card-text">
+          <div class="panel-head">
+            <div class="panel-title">
+              <h2>Текст</h2>
+              <span class="panel-meta" id="counter">0 символов</span>
+            </div>
+            <div class="panel-tools">
+              <button type="button" class="btn btn-quiet btn-sm" id="btn-example" data-icon="wand">Пример</button>
+              <button type="button" class="btn btn-quiet btn-sm" id="btn-import" data-icon="upload">Импорт</button>
+              <input type="file" id="import-input" accept=".docx,.txt,.md,text/plain" class="hidden">
+            </div>
           </div>
-        </div>
-        <div class="textarea-wrap">
-          <textarea id="text-input" spellcheck="false" aria-label="Текст работы"
-            placeholder="Вставьте текст, который нужно переписать от руки…"></textarea>
-          <div class="textarea-meta">
-            <span class="counter" id="counter">0 символов</span>
-            <button type="button" class="btn btn-ghost btn-sm" id="btn-example" data-icon="wand">Пример</button>
-            <button type="button" class="btn btn-ghost btn-sm" id="btn-import" data-icon="file">Импорт .docx / .txt</button>
-            <input type="file" id="import-input" accept=".docx,.txt,.md,text/plain" class="hidden">
+          <div class="panel-body">
+            <input type="text" class="title-input" id="title-input" placeholder="Заголовок — необязательно" autocomplete="off">
+            <div class="textarea-wrap">
+              <textarea id="text-input" spellcheck="false" aria-label="Текст работы"
+                placeholder="Вставьте текст, который нужно переписать от руки…"></textarea>
+            </div>
           </div>
-        </div>
-        <p class="hint" id="import-hint" hidden></p>
-      </section>
+          <p class="panel-note hint" id="import-hint" hidden></p>
+        </section>
 
-      <section class="card" id="card-profiles">
-        <div class="card-head">
-          <h3>Почерк</h3>
+        <!-- handwriting -->
+        <section class="panel" id="card-profiles">
+          <div class="panel-head">
+            <div class="panel-title">
+              <h2>Почерк</h2>
+            </div>
+            <a class="btn btn-quiet btn-sm" href="handwriting.html" data-icon="plus">Добавить</a>
+          </div>
+          <div class="profiles" id="profiles" aria-live="polite">
+            <div class="skeleton" style="height:60px"></div>
+            <div class="skeleton" style="height:60px"></div>
+          </div>
+          <div class="font-entry">
+            <button type="button" class="btn btn-block" id="btn-font-browser" data-icon="grid" aria-haspopup="dialog">
+              Браузер шрифтов
+            </button>
+          </div>
+        </section>
+
+        <!-- settings -->
+        <div class="panel settings" id="controls" aria-label="Настройки страницы"></div>
+      </aside>
+
+      <!-- preview -->
+      <section class="preview">
+        <div class="preview-toolbar">
+          <div class="preview-heading">
+            <span class="status-dot" aria-hidden="true"></span>
+            <h2>Предпросмотр</h2>
+            <span class="stat" id="preview-status" aria-live="polite">—</span>
+          </div>
           <span class="spacer"></span>
-          <a class="btn btn-ghost btn-sm" href="handwriting.html" data-icon="plus">Свой</a>
-        </div>
-        <div class="profiles" id="profiles" aria-live="polite">
-          <div class="skeleton" style="height:92px"></div>
-          <div class="skeleton" style="height:92px"></div>
-        </div>
-        <div class="card-foot" id="profiles-foot" style="padding: 10px 16px;">
-          <button type="button" class="btn btn-sm btn-block" id="btn-demo-profile" data-icon="wand">
-            Быстрый демо-профиль
-          </button>
-        </div>
-      </section>
-
-      <div class="panel" id="controls"></div>
-      </div><!-- /gen-side-scroll -->
-
-      <section class="card sticky-actions">
-        <div class="card-body tight" style="display:flex; gap:12px; align-items:end;">
-          <div class="field" style="flex:1">
-            <label for="seed">Зерно (seed)</label>
-            <input type="text" id="seed" inputmode="numeric" autocomplete="off">
+          <div class="preview-controls">
+            <label class="seed-field" title="Одинаковое зерно даёт одинаковый результат">
+              <span>Зерно</span>
+              <input type="text" id="seed" inputmode="numeric" autocomplete="off" aria-label="Зерно">
+            </label>
+            <button type="button" class="btn btn-icon" id="btn-dice" data-icon="refresh" data-icon-size="18" aria-label="Случайное зерно" title="Случайное зерно"></button>
+            <button type="button" class="btn btn-primary generate-btn" id="btn-generate">Сгенерировать</button>
           </div>
-          <button type="button" class="btn btn-icon" id="btn-dice" data-icon="dice" aria-label="Случайное зерно"></button>
-          <button type="button" class="btn btn-primary btn-lg" id="btn-generate" style="flex:1.4">Сгенерировать</button>
         </div>
-        <div class="card-foot actions-hint">
-          <p class="hint" id="gen-hint">Одно и то же зерно + те же настройки дают тот же результат.</p>
+
+        <div class="preview-actions hidden" id="preview-actions">
+          <a class="btn btn-quiet btn-sm hidden" id="dl-png" data-icon="download" download>PNG</a>
+          <a class="btn btn-quiet btn-sm hidden" id="dl-pdf" data-icon="download" download>PDF</a>
+          <a class="btn btn-quiet btn-sm hidden" id="dl-zip" data-icon="download" download>ZIP</a>
+          <button type="button" class="btn btn-sm hidden" id="btn-open-viewer" data-icon="zoomIn">Открыть</button>
         </div>
+
+        <div class="preview-shell" id="preview-shell">
+          <div class="preview-empty" id="preview-empty">
+            <div class="empty-art" aria-hidden="true"><span data-icon="pen" data-icon-size="22"></span></div>
+            <p>Здесь появится страница</p>
+            <span>Выберите почерк — страница появится здесь</span>
+          </div>
+          <img id="preview-img" alt="Предпросмотр рукописной страницы" class="hidden">
+          <div class="skeleton hidden" id="preview-skeleton" style="width:min(520px,80%);aspect-ratio:210/297"></div>
+        </div>
+
+        <div class="thumbs hidden" id="thumbs" aria-label="Страницы результата"></div>
       </section>
-    </aside>
+    </div>
+  </main>
+</div>
 
-    <!-- ---------------- preview ---------------- -->
-    <section class="gen-main">
-      <div class="preview-shell" id="preview-shell">
-        <div class="preview-empty" id="preview-empty">
-          <div class="big" data-icon="eye"></div>
-          <p><strong>Здесь появится страница.</strong></p>
-          <p class="hint">Выберите почерк, вставьте текст и нажмите «Сгенерировать».
-            Предпросмотр обновляется сам после правок.</p>
-        </div>
-        <img id="preview-img" alt="Предпросмотр рукописной страницы" class="hidden">
-        <div class="skeleton hidden" id="preview-skeleton" style="width:min(520px,80%);aspect-ratio:210/297"></div>
-      </div>
-
-      <div class="output-bar">
-        <span class="stat" id="preview-status">—</span>
-        <span class="spacer"></span>
-        <a class="btn btn-sm hidden" id="dl-pdf" data-icon="download" download>PDF</a>
-        <a class="btn btn-sm hidden" id="dl-zip" data-icon="download" download>ZIP</a>
-        <a class="btn btn-sm hidden" id="dl-png" data-icon="download" download>PNG</a>
-        <button type="button" class="btn btn-sm hidden" id="btn-open-viewer" data-icon="zoomIn">Открыть</button>
-      </div>
-
-      <div class="thumbs hidden" id="thumbs" aria-label="Страницы результата"></div>
-    </section>
-  </div>
-</main>
-
-<!-- ---------------- viewer ---------------- -->
+<!-- viewer -->
 <div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-label="Просмотр страницы">
   <div class="viewer-head">
     <span class="title" id="viewer-title">Страница</span>
@@ -145,9 +141,45 @@
   </div>
 </div>
 
+<!-- font browser -->
+<div class="font-modal" id="font-modal" role="dialog" aria-modal="true" aria-labelledby="font-modal-title" aria-hidden="true">
+  <div class="font-modal-panel">
+    <header class="font-modal-head">
+      <div class="font-modal-title">
+        <h2 id="font-modal-title">Браузер шрифтов</h2>
+        <p class="hint" id="font-count" aria-live="polite">Загружаю каталог…</p>
+      </div>
+      <button type="button" class="btn btn-icon" id="font-modal-close" data-icon="close" aria-label="Закрыть браузер шрифтов"></button>
+    </header>
+
+    <div class="font-modal-tools">
+      <div class="font-tool-row">
+        <input type="search" id="font-search" placeholder="Поиск по названию" autocomplete="off" aria-label="Поиск шрифта">
+        <div class="seg" id="font-cats" role="group" aria-label="Категория шрифтов"></div>
+        <button type="button" class="filter-chip" id="font-cyr" aria-pressed="true" title="Показывать только шрифты с русскими буквами">Кириллица</button>
+      </div>
+      <div class="font-tool-row font-sample-row">
+        <label for="font-sample">Образец</label>
+        <input type="text" id="font-sample" maxlength="90" autocomplete="off" spellcheck="false" title="Введите имя или фразу — превью обновится во всех карточках"
+          placeholder="Съешь ещё этих мягких французских булок">
+      </div>
+    </div>
+
+    <div class="font-grid" id="font-grid"></div>
+
+    <footer class="font-modal-foot">
+      <div class="font-selected" id="font-selected">Выберите шрифт в списке</div>
+      <div class="font-modal-actions">
+        <button type="button" class="btn" id="font-modal-cancel">Отмена</button>
+        <button type="button" class="btn btn-primary" id="font-create" data-icon="wand" disabled>Создать профиль</button>
+      </div>
+    </footer>
+  </div>
+</div>
+
 <div class="toasts" aria-live="polite" role="status"></div>
 
-<script src="js/api.js?v=2" defer></script>
-<script src="js/generator.js?v=2" defer></script>
+<script src="js/api.js?v=3" defer></script>
+<script src="js/generator.js?v=3" defer></script>
 </body>
 </html>

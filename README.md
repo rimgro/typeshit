@@ -67,13 +67,32 @@ curl -s -X POST localhost:8080/api/v1/generate \
 
 Всё детерминировано по `seed`: одинаковый запрос → одинаковые байты.
 
+## Внешний каталог шрифтов (отладка паритета)
+
+Кроме встроенных девяти шрифтов сервер умеет подхватывать каталог с диска —
+шрифты показываются в «Браузере шрифтов» на странице генератора (живое превью,
+поиск, категории и фильтр кириллицы) и в `GET /api/v1/fonts`, из любого можно
+собрать профиль через `POST /api/v1/profiles {"fontId": ...}`.
+
+```bash
+python3 scripts/fetch-parity-fonts.py --dir data/fonts   # 112 шрифтов + catalog.json
+./typeshit -data ./data                                 # по умолчанию читает <data>/fonts
+./typeshit -data ./data -fonts /path/to/fonts           # или явный каталог
+```
+
+Каталог читается один раз при старте: `*.ttf` / `*.otf` + необязательный
+`catalog.json` (`{"fonts":[{"id","name","category","scripts","languages"}]}`).
+Файлы без записи в каталоге получают имя файла как название. `data/` в
+`.gitignore`, так что выкачанные шрифты в репозиторий не попадают — это
+чужие начертания, только для локального сравнения.
+
 ## API для агента
 
 Полная спецификация: `GET /api/v1/openapi.json`.
 
 ```
 GET    /api/v1/health
-GET    /api/v1/fonts
+GET    /api/v1/fonts                        GET /api/v1/fonts/{id}/file
 GET    /api/v1/profiles                     POST /api/v1/profiles {name,fontId,variants,lang}
 GET    /api/v1/profiles/{id}                DELETE /api/v1/profiles/{id}
 GET    /api/v1/profiles/{id}/preview?text=  GET /api/v1/profiles/{id}/atlas/{file}

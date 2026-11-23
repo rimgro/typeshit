@@ -5,107 +5,92 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Справка — typeshit</title>
 <meta name="description" content="Как снять свой почерк, как сфотографировать лист и как вызывать API генератора рукописных страниц.">
-<meta name="color-scheme" content="light dark">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231b2a4a'/%3E%3Ctext x='16' y='23' font-size='19' text-anchor='middle' fill='%23fffdf9' font-family='Georgia,serif' font-style='italic'%3Eа%3C/text%3E%3C/svg%3E">
-<link rel="stylesheet" href="app.css?v=2">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f7cf6'/%3E%3Ctext x='16' y='23' font-size='19' text-anchor='middle' fill='%23fff' font-family='Georgia,serif' font-style='italic'%3Eа%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="app.css?v=3">
 </head>
 <body>
 
-<header class="topbar">
-  <a class="brand" href="index.html">
-    <span class="brand-mark" aria-hidden="true">а</span>
-    <span>typeshit<small>рукописный генератор</small></span>
-  </a>
-  <nav class="nav" aria-label="Основная навигация">
-    <a href="index.html">Генератор</a>
-    <a href="handwriting.html">Мой почерк</a>
-    <a href="help.html" aria-current="page">Справка</a>
-  </nav>
-</header>
+<div class="app-shell">
+  <aside class="sidebar no-print">
+    <a class="brand" href="index.html" aria-label="typeshit — на главную">
+      <span class="brand-mark" aria-hidden="true">а</span>
+      <span class="brand-text">typeshit<small>рукописный генератор</small></span>
+    </a>
+    <nav class="side-nav" aria-label="Основная навигация">
+      <a href="index.html" data-icon="grid"><span>Генератор</span></a>
+      <a href="handwriting.html" data-icon="pen"><span>Мой почерк</span></a>
+      <a href="help.html" aria-current="page" data-icon="help"><span>Справка</span></a>
+    </nav>
+  </aside>
 
-<main class="wrap narrow">
-  <div class="page-head">
-    <div>
-      <p class="eyebrow">Справка</p>
-      <h1>Как это устроено</h1>
-      <p class="lead">
-        Сервис не подставляет рукописный шрифт. Он снимает с листа настоящий почерк —
-        каждую букву, в нескольких исполнениях — и потом пересобирает из этих букв новый текст.
-      </p>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-head"><h2>Три слоя</h2></div>
-    <div class="card-body">
-      <div class="steps-legend">
-        <div class="item"><span class="step-num">1</span><div>
-          <p><strong>Спрайты букв.</strong> Фото листа выравнивается по перспективе, нормализуется по свету,
-          линовка и клетки распознаются, каждая буква вырезается в маску. Повторы одной буквы становятся
-          <em>разными вариантами</em> — именно из-за них страница не выглядит штампом.</p></div></div>
-        <div class="item"><span class="step-num">2</span><div>
-          <p><strong>Раскладка.</strong> Текст разбивается на строки по ширине колонки, каждая буква получает
-          свой поворот, наклон, размер, нажим и сдвиг по базовой линии. Длинные строки «плывут», наклон
-          меняется от строки к строке, между буквами появляются соединительные штрихи.</p></div></div>
-        <div class="item"><span class="step-num">3</span><div>
-          <p><strong>Бумага и съёмка.</strong> Тетрадный фон, красное поле, старение бумаги; затем физика
-          чернил (нажим, растекание, сухие участки) и имитация съёмки: сканер, телефон, факс.</p></div></div>
+  <main class="app-main">
+    <header class="page-top">
+      <div>
+        <h1>Как это устроено</h1>
+        <p class="page-sub">Настоящий почерк с листа: каждая буква в нескольких исполнениях, затем сборка нового текста.</p>
       </div>
-    </div>
-  </div>
+    </header>
 
-  <div class="card">
-    <div class="card-head"><h2>Как написать образец</h2></div>
-    <div class="card-body">
-      <ul style="margin:0; padding-left:20px; line-height:1.7">
-        <li>Распечатайте шаблон <strong>в масштабе 100 %</strong>, без «по размеру страницы».</li>
-        <li>Пишите той ручкой, которой обычно пишете: шариковой, гелевой — неважно, важна та же манера.</li>
-        <li>По одной букве в клетку, <strong>не выходя далеко за рамки</strong>: рамка нужна, чтобы буква не наехала на соседнюю.</li>
-        <li>Не старайтесь писать красиво. Нужен ваш обычный почерк, вместе с его неровностями.</li>
-        <li>Заполняйте все повторы каждой буквы — разные варианты одной буквы и делают письмо живым.</li>
-        <li>Если буква не получилась — зачеркните клетку и напишите рядом, а при разметке просто уберите лишнюю ячейку.</li>
-      </ul>
-    </div>
-  </div>
+    <article class="doc">
 
-  <div class="card">
-    <div class="card-head"><h2>Как сфотографировать</h2></div>
-    <div class="card-body">
-      <ul style="margin:0; padding-left:20px; line-height:1.7">
-        <li>Сверху, параллельно листу. Не под углом — перспектива исправляется, но теряется резкость.</li>
-        <li>Свет ровный, без вспышки и без резкой тени от телефона. Дневная лампа сбоку — лучший вариант.</li>
-        <li>Лист занимает почти весь кадр, края видны целиком.</li>
-        <li>Резкость: коснитесь экрана, чтобы сфокусироваться на тексте. Размытые буквы не вырежутся.</li>
-        <li>Скан с принтера тоже подходит — даже лучше.</li>
-      </ul>
-    </div>
-  </div>
+      <section class="doc-section">
+        <h2>Три слоя</h2>
+        <div class="steps-legend">
+          <div class="item"><span class="step-num">1</span><div><strong>Спрайты букв.</strong> Фото выравнивается по перспективе и свету, линовка и клетки распознаются, каждая буква вырезается в маску. Повторы одной буквы становятся разными вариантами.</div></div>
+          <div class="item"><span class="step-num">2</span><div><strong>Раскладка.</strong> Текст разбивается на строки по ширине колонки. Каждая буква получает свой поворот, наклон, размер, нажим и сдвиг по базовой линии.</div></div>
+          <div class="item"><span class="step-num">3</span><div><strong>Бумага и съёмка.</strong> Тетрадный фон, красное поле, старение; затем физика чернил и имитация съёмки: сканер, телефон, факс.</div></div>
+        </div>
+      </section>
 
-  <div class="card">
-    <div class="card-head"><h2>Разметка</h2></div>
-    <div class="card-body">
-      <p>Сервер сам находит клетки и подставляет буквы. Ваша задача — проверить:</p>
-      <div class="steps-legend" style="margin:12px 0">
-        <div class="item"><span class="kbd">Клик</span><div>выбрать ячейку; буква набирается с клавиатуры</div></div>
-        <div class="item"><span class="kbd">Shift</span> + <span class="kbd">протянуть</span><div>нарисовать новую ячейку</div></div>
-        <div class="item"><span class="kbd">Delete</span><div>удалить ячейку, <span class="kbd">Backspace</span> — стереть букву</div></div>
-        <div class="item"><span class="kbd">Стрелки</span><div>сдвинуть ячейку на 1 px (<span class="kbd">Shift</span> — на 10)</div></div>
-        <div class="item"><span class="kbd">Ctrl</span> + <span class="kbd">Z</span><div>отменить, <span class="kbd">Ctrl</span> + <span class="kbd">Shift</span> + <span class="kbd">Z</span> — вернуть</div></div>
-        <div class="item"><span class="kbd">Колесо</span><div>масштаб; перетаскивание фона — панорама</div></div>
-      </div>
-      <p class="hint">Красный пунктир — базовая линия строки: по ней буква ставится на линейку. Если линия
-        съехала, буквы будут «висеть» или «тонуть» в строке.</p>
-    </div>
-  </div>
+      <section class="doc-section">
+        <h2>Как написать образец</h2>
+        <ul>
+          <li>Распечатайте шаблон <strong>в масштабе 100 %</strong>, без «по размеру страницы».</li>
+          <li>Пишите той ручкой, которой обычно пишете: важна ваша манера, а не каллиграфия.</li>
+          <li>По одной букве в клетку, <strong>не выходя далеко за рамки</strong>.</li>
+          <li>Не старайтесь писать красиво. Нужен обычный почерк вместе с его неровностями.</li>
+          <li>Заполняйте все повторы — разные варианты одной буквы делают письмо живым.</li>
+          <li>Если буква не получилась — зачеркните клетку и напишите рядом, а при разметке уберите лишнюю ячейку.</li>
+        </ul>
+      </section>
 
-  <div class="card">
-    <div class="card-head"><h2>API для агентов</h2><span class="spacer"></span><span class="badge">/api/v1</span></div>
-    <div class="card-body">
-      <p class="hint" style="margin-bottom:12px">Всё, что делает интерфейс, доступно по HTTP. Ответы — JSON,
-        изображения — PNG, плюс готовые PDF и ZIP.</p>
+      <section class="doc-section">
+        <h2>Как сфотографировать</h2>
+        <ul>
+          <li>Сверху, параллельно листу. Под углом перспектива исправляется, но теряется резкость.</li>
+          <li>Свет ровный, без вспышки и резкой тени от телефона. Дневная лампа сбоку — лучший вариант.</li>
+          <li>Лист занимает почти весь кадр, края видны целиком.</li>
+          <li>Коснитесь экрана, чтобы сфокусироваться на тексте. Размытые буквы не вырежутся.</li>
+          <li>Скан с принтера тоже подходит — даже лучше.</li>
+        </ul>
+      </section>
 
-      <h3 style="margin-bottom:8px">Сгенерировать страницу</h3>
-      <pre class="code">curl -sS http://127.0.0.1:8080/api/v1/generate \
+      <section class="doc-section">
+        <h2>Разметка</h2>
+        <p>Сервер сам находит клетки и подставляет буквы. Ваша задача — проверить:</p>
+        <div class="steps-legend">
+          <div class="item"><span class="kbd">Клик</span><div>выбрать ячейку; буква набирается с клавиатуры</div></div>
+          <div class="item"><span class="kbd">Shift</span> + <span class="kbd">протянуть</span><div>нарисовать новую ячейку</div></div>
+          <div class="item"><span class="kbd">Delete</span><div>удалить ячейку, <span class="kbd">Backspace</span> — стереть букву</div></div>
+          <div class="item"><span class="kbd">Стрелки</span><div>сдвинуть ячейку на 1 px (<span class="kbd">Shift</span> — на 10)</div></div>
+          <div class="item"><span class="kbd">Ctrl</span> + <span class="kbd">Z</span><div>отменить, <span class="kbd">Ctrl</span> + <span class="kbd">Shift</span> + <span class="kbd">Z</span> — вернуть</div></div>
+          <div class="item"><span class="kbd">Колесо</span><div>масштаб; перетаскивание фона — панорама</div></div>
+        </div>
+        <p class="hint">Красный пунктир — базовая линия строки: по ней буква ставится на линейку.</p>
+      </section>
+
+      <section class="doc-section">
+        <h2>Подбор шрифта</h2>
+        <p>В панели «Почерк» откройте «Браузер шрифтов». Каждая карточка показывает настоящий шрифт: введите своё имя или фразу в поле «Образец», чтобы сравнить начертания. Фильтр «Кириллица» оставляет только шрифты с русскими буквами. Выберите карточку и нажмите «Создать профиль».</p>
+      </section>
+
+      <section class="doc-section">
+        <h2>API для агентов <span class="badge" style="margin-left:8px; vertical-align:2px">/api/v1</span></h2>
+        <p class="hint">Всё, что делает интерфейс, доступно по HTTP. Ответы — JSON, изображения — PNG, плюс готовые PDF и ZIP.</p>
+
+        <h3 style="margin:18px 0 6px">Сгенерировать страницу</h3>
+        <pre class="code">curl -sS http://127.0.0.1:8080/api/v1/generate \
   -H 'content-type: application/json' \
   -d '{
     "text": "Сочинение по литературе.\n\nПрирода в романе — не фон, а действующее лицо…",
@@ -123,12 +108,10 @@
 curl -sS -o page.pdf http://127.0.0.1:8080/api/v1/results/r_1a2b3c/export.pdf
 curl -sS -o pages.zip http://127.0.0.1:8080/api/v1/results/r_1a2b3c/export.zip</pre>
 
-      <p class="hint" style="margin:12px 0">Длинные тексты лучше отправлять асинхронно: добавьте
-        <span class="mono">"async": true</span>, получите <span class="mono">jobId</span> и опрашивайте
-        <span class="mono">GET /api/v1/jobs/{jobId}</span>.</p>
+        <p class="hint">Длинные тексты лучше отправлять асинхронно: добавьте <span class="mono">"async": true</span>, получите <span class="mono">jobId</span> и опрашивайте <span class="mono">GET /api/v1/jobs/{jobId}</span>.</p>
 
-      <h3 style="margin-bottom:8px">Свой почерк без браузера</h3>
-      <pre class="code"># 1. Шаблон: список листов и их спецификаций
+        <h3 style="margin:18px 0 6px">Свой почерк без браузера</h3>
+        <pre class="code"># 1. Шаблон: список листов и их спецификаций
 curl -sS 'http://127.0.0.1:8080/api/v1/template?lang=ru&amp;reps=2'
 
 # 2. Фото заполненного листа → нормализованный скан + ячейки
@@ -146,72 +129,65 @@ curl -sS -X POST http://127.0.0.1:8080/api/v1/capture/c_77/commit \
   -H 'content-type: application/json' \
   -d '{"name":"Мой почерк","assignments":[],"style":{}}'</pre>
 
-      <h3 style="margin:12px 0 8px">Эндпоинты</h3>
-      <table style="width:100%; border-collapse:collapse; font-size:13px">
-        <thead>
-          <tr style="text-align:left; color:var(--muted)">
-            <th style="padding:6px 8px; border-bottom:1px solid var(--border)">Метод</th>
-            <th style="padding:6px 8px; border-bottom:1px solid var(--border)">Путь</th>
-            <th style="padding:6px 8px; border-bottom:1px solid var(--border)">Назначение</th>
-          </tr>
-        </thead>
-        <tbody id="api-table" class="mono">
-          <tr><td style="padding:5px 8px">GET</td><td>/health</td><td>жив ли сервер</td></tr>
-          <tr><td style="padding:5px 8px">GET</td><td>/fonts</td><td>встроенные шрифты для демо-профилей</td></tr>
-          <tr><td style="padding:5px 8px">GET</td><td>/profiles</td><td>список почерков</td></tr>
-          <tr><td style="padding:5px 8px">POST</td><td>/profiles</td><td>профиль из встроенного шрифта</td></tr>
-          <tr><td style="padding:5px 8px">GET</td><td>/profiles/{id}</td><td>профиль целиком (спрайты, стиль)</td></tr>
-          <tr><td style="padding:5px 8px">DELETE</td><td>/profiles/{id}</td><td>удалить профиль</td></tr>
-          <tr><td style="padding:5px 8px">GET</td><td>/profiles/{id}/preview</td><td>тестовая строка PNG</td></tr>
-          <tr><td style="padding:5px 8px">GET</td><td>/template</td><td>шаблоны листов</td></tr>
-          <tr><td style="padding:5px 8px">POST</td><td>/capture</td><td>загрузить фото, получить разметку</td></tr>
-          <tr><td style="padding:5px 8px">POST</td><td>/capture/{id}/cells</td><td>сохранить правки разметки</td></tr>
-          <tr><td style="padding:5px 8px">POST</td><td>/capture/{id}/commit</td><td>собрать профиль</td></tr>
-          <tr><td style="padding:5px 8px">POST</td><td>/generate</td><td>отрендерить страницы</td></tr>
-          <tr><td style="padding:5px 8px">GET</td><td>/jobs/{id}</td><td>состояние асинхронной задачи</td></tr>
-          <tr><td style="padding:5px 8px">GET</td><td>/results/{id}/{file}</td><td>страница PNG</td></tr>
-          <tr><td style="padding:5px 8px">GET</td><td>/results/{id}/export.pdf</td><td>PDF</td></tr>
-          <tr><td style="padding:5px 8px">GET</td><td>/results/{id}/export.zip</td><td>ZIP с PNG</td></tr>
-          <tr><td style="padding:5px 8px">GET</td><td>/openapi.json</td><td>описание схемы</td></tr>
-        </tbody>
-      </table>
-      <p class="hint" style="margin-top:12px">Ограничения: текст до 120 000 символов, до 40 страниц,
-        загрузка до 20 МБ. Одинаковые <span class="mono">seed</span> и настройки дают побайтно
-        одинаковый результат — это удобно для тестов.</p>
-    </div>
-  </div>
+        <h3 style="margin:18px 0 6px">Эндпоинты</h3>
+        <div class="table-wrap">
+          <table class="api-table">
+            <thead>
+              <tr><th>Метод</th><th>Путь</th><th>Назначение</th></tr>
+            </thead>
+            <tbody id="api-table">
+              <tr><td>GET</td><td>/health</td><td>жив ли сервер</td></tr>
+              <tr><td>GET</td><td>/fonts</td><td>каталог шрифтов: встроенные + внешние</td></tr>
+              <tr><td>GET</td><td>/fonts/{id}/file</td><td>TTF/OTF для превью в браузере</td></tr>
+              <tr><td>GET</td><td>/profiles</td><td>список почерков</td></tr>
+              <tr><td>POST</td><td>/profiles</td><td>профиль из встроенного шрифта</td></tr>
+              <tr><td>GET</td><td>/profiles/{id}</td><td>профиль целиком (спрайты, стиль)</td></tr>
+              <tr><td>DELETE</td><td>/profiles/{id}</td><td>удалить профиль</td></tr>
+              <tr><td>GET</td><td>/profiles/{id}/preview</td><td>тестовая строка PNG</td></tr>
+              <tr><td>GET</td><td>/template</td><td>шаблоны листов</td></tr>
+              <tr><td>POST</td><td>/capture</td><td>загрузить фото, получить разметку</td></tr>
+              <tr><td>POST</td><td>/capture/{id}/cells</td><td>сохранить правки разметки</td></tr>
+              <tr><td>POST</td><td>/capture/{id}/commit</td><td>собрать профиль</td></tr>
+              <tr><td>POST</td><td>/generate</td><td>отрендерить страницы</td></tr>
+              <tr><td>GET</td><td>/jobs/{id}</td><td>состояние асинхронной задачи</td></tr>
+              <tr><td>GET</td><td>/results/{id}/{file}</td><td>страница PNG</td></tr>
+              <tr><td>GET</td><td>/results/{id}/export.pdf</td><td>PDF</td></tr>
+              <tr><td>GET</td><td>/results/{id}/export.zip</td><td>ZIP с PNG</td></tr>
+              <tr><td>GET</td><td>/openapi.json</td><td>описание схемы</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="hint" style="margin-top:12px">Ограничения: текст до 120 000 символов, до 40 страниц, загрузка до 20 МБ. Одинаковые <span class="mono">seed</span> и настройки дают побайтно одинаковый результат.</p>
+      </section>
 
-  <div class="card">
-    <div class="card-head"><h2>Вопросы</h2></div>
-    <div class="card-body">
-      <details class="group">
-        <summary>Почему буквы иногда «пляшут»?<span class="chev" data-icon="right" data-icon-size="14"></span></summary>
-        <div class="group-body"><p class="hint">Так работает разброс: у каждой буквы свой поворот и сдвиг,
-          у строки — собственное дрожание. Уменьшите «Разброс» в группе «Стиль письма», если нужно ровнее.</p></div>
-      </details>
-      <details class="group">
-        <summary>Чем «телефон» отличается от «сканера»?<span class="chev" data-icon="right" data-icon-size="14"></span></summary>
-        <div class="group-body"><p class="hint">«Сканер» выбеливает бумагу, добавляет пыль и полосы.
-          «Телефон» наклоняет лист, добавляет перспективу, виньетку, тень и артефакты JPEG — так выглядят
-          фотографии, снятые на камеру.</p></div>
-      </details>
-      <details class="group">
-        <summary>Можно ли смешать два почерка?<span class="chev" data-icon="right" data-icon-size="14"></span></summary>
-        <div class="group-body"><p class="hint">Возьмите лист с буквами, которые хотите взять из другого почерка,
-          и создайте профиль только с ними. Пока профиль один на страницу — смешивание появится позже.</p></div>
-      </details>
-      <details class="group">
-        <summary>Где хранятся данные?<span class="chev" data-icon="right" data-icon-size="14"></span></summary>
-        <div class="group-body"><p class="hint">Всё локально: <span class="mono">data/profiles</span> —
-          почерки, <span class="mono">data/captures</span> — сканы и разметка, <span class="mono">data/results</span> —
-          готовые страницы. Внешних сервисов нет.</p></div>
-      </details>
-    </div>
-  </div>
-</main>
+      <section class="doc-section">
+        <h2>Вопросы</h2>
+        <div class="faq">
+          <details>
+            <summary>Почему буквы иногда «пляшут»?<span class="chev" data-icon="right" data-icon-size="14"></span></summary>
+            <div class="answer"><p>Так работает разброс: у каждой буквы свой поворот и сдвиг, у строки — собственное дрожание. Уменьшите «Разброс» в группе «Стиль письма», если нужно ровнее.</p></div>
+          </details>
+          <details>
+            <summary>Чем «телефон» отличается от «сканера»?<span class="chev" data-icon="right" data-icon-size="14"></span></summary>
+            <div class="answer"><p>«Сканер» выбеливает бумагу, добавляет пыль и полосы. «Телефон» наклоняет лист, добавляет перспективу, виньетку, тень и артефакты JPEG.</p></div>
+          </details>
+          <details>
+            <summary>Можно ли смешать два почерка?<span class="chev" data-icon="right" data-icon-size="14"></span></summary>
+            <div class="answer"><p>Возьмите лист с буквами, которые хотите взять из другого почерка, и создайте профиль только с ними. Пока профиль один на страницу.</p></div>
+          </details>
+          <details>
+            <summary>Где хранятся данные?<span class="chev" data-icon="right" data-icon-size="14"></span></summary>
+            <div class="answer"><p>Всё локально: <span class="mono">data/profiles</span> — почерки, <span class="mono">data/captures</span> — сканы и разметка, <span class="mono">data/results</span> — готовые страницы. Внешних сервисов нет.</p></div>
+          </details>
+        </div>
+      </section>
+
+    </article>
+  </main>
+</div>
 
 <div class="toasts" aria-live="polite" role="status"></div>
-<script src="js/api.js?v=2" defer></script>
+<script src="js/api.js?v=3" defer></script>
 <script defer>
   document.addEventListener("DOMContentLoaded", function () { window.App.applyIcons(document); });
 </script>

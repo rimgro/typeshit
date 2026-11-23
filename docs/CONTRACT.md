@@ -120,6 +120,7 @@ fallback to `index.html`.
 |---|---|---|---|
 | GET | `/api/v1/health` | – | `{"ok":true,"version":"..."}` |
 | GET | `/api/v1/fonts` | – | `[{"id","name","slant","cursive","cyrillic":bool}]` |
+| GET | `/api/v1/fonts/{id}/file` | – | raw TTF/OTF for client-side previews |
 | GET | `/api/v1/profiles` | – | `[{profile summary}]` |
 | POST | `/api/v1/profiles` | `{"name","fontId","variants"}` | `{profile}` (built from font) |
 | GET | `/api/v1/profiles/{id}` | – | `{profile}` |
@@ -150,14 +151,14 @@ generated on demand and cached next to the pages.
 Vanilla HTML/CSS/JS, **no build step, no CDN, no external fonts** (system font stack).
 Russian UI. Three views:
 
-1. `index.html` — generator: text area, profile picker, pen/paper/style/flaws controls,
-   live preview (debounced `POST /api/v1/generate`, `scale` low), download PNG/PDF/ZIP.
+1. `index.html` — generator: text area, profile picker, font browser with live previews,
+   pen/paper/style/flaws controls, live preview (debounced `POST /api/v1/generate`, `scale` low), download PNG/PDF/ZIP.
 2. `handwriting.html` — handwriting studio: download template, upload photo, canvas
    markup (pan/zoom, click a cell → type the letter, drag/resize/delete/add cells,
    set rows/baselines), commit → profile, live test-line preview.
 3. `help.html` — how to photograph a sample well + API usage snippet.
 
-Design: light "paper" theme, generous spacing, no gradients-for-gradients, mobile ok.
+Design: dark workspace theme, light paper preview, one blue accent, flat panels, mobile ok.
 
 ## Quality bar
 

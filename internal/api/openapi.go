@@ -61,8 +61,9 @@ func openAPIDoc() map[string]any {
 		},
 		"servers": []any{map[string]any{"url": "/"}},
 		"paths": map[string]any{
-			"/api/v1/health": map[string]any{"get": op("service status", nil)},
-			"/api/v1/fonts":  map[string]any{"get": op("bundled fallback fonts", nil)},
+			"/api/v1/health":          map[string]any{"get": op("service status", nil)},
+			"/api/v1/fonts":           map[string]any{"get": op("bundled fallback fonts", nil)},
+			"/api/v1/fonts/{id}/file": map[string]any{"get": op("raw TTF/OTF font file for client-side previews", nil)},
 			"/api/v1/profiles": map[string]any{
 				"get": op("list handwriting profiles", nil),
 				"post": op("build a profile from a bundled font", map[string]any{

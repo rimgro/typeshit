@@ -81,6 +81,9 @@
   function unlock(stepId) {
     var node = $("#" + stepId);
     if (node) node.classList.remove("locked");
+    if (stepId === "step3") {
+      requestAnimationFrame(function () { resizeCanvas(true); });
+    }
   }
 
   function markDone(stepId) {
@@ -712,7 +715,7 @@
       if (e.code === "Space") spaceDown = false;
     });
 
-    new ResizeObserver(function () { resizeCanvas(false); }).observe($("#canvas-wrap"));
+    new ResizeObserver(function () { resizeCanvas(true); }).observe($("#canvas-wrap"));
   }
 
   function zoomAt(p, factor) {
@@ -1045,13 +1048,18 @@
     host.appendChild(el("div", { class: "line" }, el("span", { text: "Символов набора" }),
       el("b", { text: covered + " / " + charset.length })));
     if (missing.length) {
-      host.appendChild(el("p", { class: "hint", style: "margin:4px 0 0", text: "Не хватает: " }));
+      var details = el("details", { class: "missing-box" });
+      if (missing.length <= 12) details.open = true;
+      details.appendChild(el("summary", {},
+        el("span", { text: "Не хватает · " + missing.length }),
+        el("span", { class: "chev", html: A.icon("right", 13) })));
       var box = el("div", { class: "char-list" });
       missing.slice(0, 80).forEach(function (ch) {
         box.appendChild(el("span", { class: "char-chip missing", title: "Буквы нет в разметке" }, el("b", { text: ch })));
       });
       if (missing.length > 80) box.appendChild(el("span", { class: "hint", text: "+" + (missing.length - 80) }));
-      host.appendChild(box);
+      details.appendChild(box);
+      host.appendChild(details);
     } else {
       host.appendChild(el("span", { class: "badge ok", text: "весь набор размечен" }));
     }
@@ -1182,8 +1190,8 @@
   function showCommitResult(prof) {
     var host = $("#commit-result");
     host.innerHTML = "";
-    var card = el("div", { class: "card" });
-    var head = el("div", { class: "card-head" },
+    var card = el("div", { class: "commit-result" });
+    var head = el("div", { class: "commit-head" },
       el("div", {},
         el("h3", { text: prof.name || "Почерк" }),
         el("div", { class: "sub", text: (prof.source === "scan" || prof.source === "manual" ? "с листа" : "из шрифта") +
@@ -1192,12 +1200,12 @@
     var open = el("a", { class: "btn btn-primary btn-sm", href: "index.html?profile=" + encodeURIComponent(prof.id) + "", text: "Открыть в генераторе" });
     head.appendChild(open);
     card.appendChild(head);
-    var body = el("div", { class: "card-body" });
+    var body = el("div", { class: "commit-body" });
     var img = el("img", {
       alt: "Тестовая строка",
       src: A.url("/profiles/" + encodeURIComponent(prof.id) + "/preview?text=" +
         encodeURIComponent("Съешь же ещё этих мягких французских булок") + "&t=" + Date.now()),
-      style: "width:100%;border-radius:8px;background:#fff;border:1px solid var(--border)"
+      style: "width:100%"
     });
     body.appendChild(img);
     body.appendChild(el("p", { class: "hint", style: "margin-top:10px",
